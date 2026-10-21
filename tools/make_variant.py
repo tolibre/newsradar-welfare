@@ -81,9 +81,9 @@ REPLACEMENTS = [
     (NM, "KEYWORD_GROUPS.update(DUTY_KEYWORD_GROUPS)\n", NEW_GROUPS_LINE, 1, False),
     (NM, '    "개인정보위": [],\n', NEW_ANTI, 1, False),
     # ---- news_monitor.py: 보관 기간 ----
-    # 기사량은 첫 실행 전엔 모른다(전부 원본 수집 범위 밖). 검색어가 11개로 변형판 중 가장 많고 '국민연금'은 증시·기금 기사로
-    # 본문 언급이 매우 잦다 → 다른 판(45일)보다 짧은 30일로 시작해 첫 실행 실측 뒤 조정(GitHub 100MB 한도).
-    (NM, "RETENTION_DAYS = 90 ", "RETENTION_DAYS = 30 ", 1, False),
+    # 첫 실행 실측(10/21 17:52, 5,312건): 발행일 기준 10/20 1,178건·10/21 17시까지 1,542건 → 하루 1,200~1,800건,
+    # 기후·문체판(1,500~2,000)과 비슷 → 같은 45일(약 6~8만 건). 처음엔 '국민연금' 양을 걱정해 30일로 시작했다.
+    (NM, "RETENTION_DAYS = 90 ", "RETENTION_DAYS = 45 ", 1, False),
     # ---- news_monitor.py: 기관장 이름 씨앗(원본 0-38 자리) ----
     (NM, "ACTOR_PEOPLE_SEED = {}\n", f"ACTOR_PEOPLE_SEED = {SEED!r}   # 복지·보건판(생성기)\n", 1, False),
     # ---- news_monitor.py: 바이라인(본인 기사 섹션) ----
@@ -133,7 +133,7 @@ EXPECT = {
     "KEYWORDS": ["보건복지부", "복지부", "질병관리청", "질병청", "식품의약품안전처", "식약처",
                  "성평등가족부", "성평등부", "국민연금", "건강보험공단", "건보공단"],
     "GROUP_ORDER": GROUPS,
-    "RETENTION_DAYS": 30,
+    "RETENTION_DAYS": 45,
     "BYLINE_NAME": REPORTER,
     "BYLINE_SECTION": f"{REPORTER} 기자",
     "ACTOR_ASSIGN": True,

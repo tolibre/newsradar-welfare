@@ -703,7 +703,7 @@ ALERT_DIR  = os.path.join(BASE_DIR, "alerts")
 
 MAX_PAGES_PER_KEYWORD = 5      # 네이버: 키워드당 최대 5페이지(500건)까지 거슬러 수집
 DAILY_CALL_SOFT_LIMIT = 20000  # 일일 호출 안전장치 (한도 25,000의 80%)
-RETENTION_DAYS = 30            # DB 보관 기간(일). 이보다 오래된 기사는 자동 삭제. 0이면 삭제 안 함.
+RETENTION_DAYS = 45            # DB 보관 기간(일). 이보다 오래된 기사는 자동 삭제. 0이면 삭제 안 함.
 
 # KST는 파일 상단(설정부 앞)에 있다 — 임시 키워드(active_temp_keywords)가 임포트 시점에 쓴다
 
