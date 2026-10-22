@@ -118,9 +118,42 @@ def topic_line():
     return "CLUSTER_TOPIC_KEYWORDS = {" + ", ".join(f'"{w}"' for w in ["누리호"] + TOPIC_WORDS) + "}   # 사회정책팀 사안어 추가(social_team.py)\n"
 
 
-def replacements(NM, RP):
-    """세 생성기가 REPLACEMENTS 앞에 붙이는 치환(원본 기준 문자열·횟수)."""
-    return weak_replacements(NM, RP) + [
+# ---- 휴일 특근(당직) 섹션 '제목에 이름 없음' 접기(0-72) ----
+# 사용자(10/23 01:27): "많은 곳만 걸자" — 10/22 평일 하루 팀 전체 약 9,200건 중 기사량이 많은 여섯 그룹(노동 1,711·교육청 1,098·복지부 828·
+# 노동부 722·행안부 695·문체부 669)만. **다른 판의 당직 섹션에서만** 접는다 — 자기 판의 본 섹션에는 안 건다(fold_keep이 own_groups를 뺀다).
+# 원본 0-69 LIVE_FOLD_KEEP(need만 쓰는 규칙): 제목에 need 단어가 하나도 없는 기사 → wk, 묶음 전부 wk면 접힘, [단독]은 안 접음.
+# 국민연금·건보공단·중수청은 여기 없음(0-58 '관련 약함' 그대로). 교육청 '다른 지역' 접기는 박종환 판 본 섹션에만(사용자 "현행 유지").
+# need = 그 그룹의 제목 판정어(MEMBERS) + 기관장 이름(제목에 부처명 대신 장관 이름만 쓰는 기사가 많다) + 아래 추가어.
+DUTY_FOLD_GROUPS = ["노동", "교육청", "복지부", "노동부", "행안부", "문체부"]
+DUTY_FOLD_EXTRA = {
+    "교육청": ["교육감"],
+    "복지부": ["정은경", "복지장관"],
+    "노동부": ["김영훈", "노동"],   # '노동자·노동계' 제목(예: '울산경찰, 노동자에 납 배출 주사 의혹 압수수색')은 펼침 — 노동 섹션과 같은 기준
+    "문체부": ["최휘영", "문체장관"],
+}
+DUTY_FOLD_DESC = ("휴일 특근(당직) 섹션 중 기사량이 많은 노동·교육청·복지부·노동부·행안부·문체부는 제목에 기관 이름(장관 이름 포함)이 없는 묶음 — "
+                  "본문에만 이름이 스친 기사 — 을 섹션 끝에 접어 둡니다. [단독]은 접지 않고, 건수에는 포함합니다. 자기 출입처 섹션에는 적용하지 않습니다.")
+
+
+def fold_keep(own_groups, own_rules=None):
+    """이 판의 LIVE_FOLD_KEEP — 당직 접기(자기 섹션 제외) + 판 고유 규칙(교육판 교육청 '다른 지역')."""
+    import re as _re
+    out = {}
+    for g in DUTY_FOLD_GROUPS:
+        if g in own_groups:
+            continue
+        words = [k for k, gg in DUTY_GROUPS.items() if gg == g] + DUTY_FOLD_EXTRA.get(g, [])
+        out[g] = {"keep": [], "fold": [], "need": [_re.escape(w) for w in words],
+                  "label": "제목에 이름 없음", "desc": DUTY_FOLD_DESC}
+    out.update(own_rules or {})
+    return out
+
+
+def replacements(NM, RP, own_groups=None, own_rules=None):
+    """사회정책팀 생성기가 REPLACEMENTS 앞에 붙이는 치환(원본 기준 문자열·횟수). own_groups를 주면 LIVE_FOLD_KEEP도 채운다(0-72)."""
+    fk = [] if own_groups is None else [
+        (NM, "LIVE_FOLD_KEEP = {}\n", f"LIVE_FOLD_KEEP = {fold_keep(own_groups, own_rules)!r}   # 사회정책팀 당직 접기(social_team.py, 0-72)\n", 1, False)]
+    return fk + weak_replacements(NM, RP) + [
         (NM, r"DUTY_KEYWORDS = \[\n(?:.*\n)*?\]\n", duty_keywords_block(), 1, True),
         (NM, r"DUTY_KEYWORD_GROUPS = \{\n(?:.*\n)*?\}\n", duty_groups_block(), 1, True),
         (NM, 'KEYWORD_MAX_PAGES = {\n    "CBS": 1,\n}\n', max_pages_block(), 1, False),
