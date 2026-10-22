@@ -171,9 +171,10 @@ POLICY_SIGNALS = [
 ]
 
 GROUP_SCOPE = {
-    # 복지·보건판(생성기) — '관련 약함' 접기용 소관 어휘. strong 하나면 관련, weak는 정책 신호어(POLICY_SIGNALS)와 함께일 때만.
+    # 사회정책팀(social_team.py) — '관련 약함' 접기용 소관 어휘. strong 하나면 관련, weak는 정책 신호어(POLICY_SIGNALS)와 함께일 때만.
     "국민연금": {
         "strong": [
+            "국민연금",   # 0-68: 당직으로 보는 판에선 '국민연금'이 제목 판정어가 아니라 이름이 있어도 접혔다
             "연금개혁", "연금 개혁", "연금특위", "모수개혁", "구조개혁", "보험료율", "소득대체율",
             "수급개시", "수급연령", "수급 연령", "수급자", "수급권", "가입기간", "납부예외", "추납", "반환일시금",
             "노령연금", "유족연금", "장애연금", "연금액", "연금 수령", "연금수령", "조기연금", "연기연금", "크레딧",
@@ -187,6 +188,7 @@ GROUP_SCOPE = {
     },
     "건보공단": {
         "strong": [
+            "건보공단", "건강보험공단",   # 0-68: 위와 같은 이유
             "건강보험", "건보", "보험료", "지역가입자", "직장가입자", "피부양자", "소득정산", "부과체계",
             "사무장병원", "불법개설", "면허대여", "특사경", "특별사법경찰", "부당청구", "환수",
             "요양급여", "장기요양", "요양보호사", "수가", "본인부담", "산정특례", "급여화", "비급여",
@@ -1841,7 +1843,7 @@ GROUP_GATE_MODE = {
     "과기정통부": "strict",
 }
 
-def scope_gate(title, kws, mode=None):
+def scope_gate(title, kws, mode=None, group=None):
     """폴백 기사(제목에 출입처 키워드가 없는 기사)의 소관 관문. **check 전용.**
 
     (통과여부, 사유) 반환. 사유는 Actions 로그/alerts 파일에 남겨
@@ -1855,6 +1857,11 @@ def scope_gate(title, kws, mode=None):
         return True, "제목매칭"
     gs = display_groups(kws)
     g = gs[0] if gs else None
+    # group 인자(0-68): 판정할 그룹을 직접 준다 — 뉴스레이다 '관련 약함'이 섹션 이름으로 부른다.
+    # display_groups는 이 판의 검색어(KEYWORDS)만 보므로, 휴일 특근 당직 그룹(예: 사회정책팀 판의 국민연금)은
+    # 그룹을 못 찾아 '관문없음'으로 통과해 버렸다. 원본의 과기정통부·우주항공청은 그룹 이름이 곧 검색어라 결과가 같다.
+    if group is not None:
+        g = group
     spec = GROUP_SCOPE.get(g)
     if not spec:
         return True, "관문없음"      # 어휘 미정의 그룹은 통과 (보수적)
@@ -3700,14 +3707,14 @@ def _attach_nocut(conn, groups, start, end, pool=None):
 # 기사마다 wk=1을 달고, 페이지가 **묶음 기사 전부가 wk일 때만** 그 묶음을 섹션 끝 '관련 약함' 접힌 줄로 내린다.
 # 지우지 않는 이유: 접히는 것 중 'AI·데이터 혁신 3법 국회 통과' 같은 정책 기사가 섞인다 — 뉴스레이다는 빠뜨리지 않는 쪽(프로젝트 규칙 2).
 # 순위·체크·보고 양식·건수 불변(데이터 순서 그대로, 표시만). 변형판은 그룹 이름이 달라 동작 없음.
-LIVE_WEAK_FOLD_GROUPS = ('국민연금', '건보공단')   # 복지·보건판(생성기, 10/22)
+LIVE_WEAK_FOLD_GROUPS = ('국민연금', '건보공단')   # 사회정책팀(social_team.py, 0-64·0-68)
 LIVE_WEAK_GATE_MODE = "normal"
 
 def live_weak_title(title, group):
     """뉴스레이다에서 '관련 약함'으로 접을 만한 기사인지(0-58). 사유 문자열(로그용) 또는 ''."""
     if group not in LIVE_WEAK_FOLD_GROUPS or priority_mark(title) == "🔥":
         return ""
-    ok, why = scope_gate(title, {group}, mode=LIVE_WEAK_GATE_MODE)
+    ok, why = scope_gate(title, {group}, mode=LIVE_WEAK_GATE_MODE, group=group)   # group= (0-68)
     if not ok:
         return why
     r = noise_reason(title, strict=False, kws={group})
