@@ -113,6 +113,8 @@ REPLACEMENTS = [
          '<button type="button" id="sync" class="sync off" style="display:none"', 1, False),
     # ---- render_page.py: 화면 문구 ----
     (RP, "<title>뉴스레이다</title>", f"<title>뉴스레이다 · {BEATS_TITLE}</title>", 1, False),
+    # 0-75: 머리줄 판 주인(사용자 10/23 "이 페이지가 누구의 판인지 각자의 이름을 써주면 좋겠어. 출입처명도 간략히")
+    (RP, '<span class="who">김광일<span class="whob"> (과학·방송·경쟁 담당)</span></span>', '<span class="who">정다운<span class="whob"> (복지부 등)</span></span>', 1, False),
     (RP, "document.title = '뉴스레이다 · ' + r.title;",
          "document.title = '뉴스레이다(복지) · ' + r.title;", 1, False),
     (RP, "맨 끝 ‘김광일 기자’는", f"맨 끝 ‘{REPORTER} 기자’는", 1, False),
