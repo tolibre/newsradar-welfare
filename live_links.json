@@ -1,0 +1,21 @@
+{
+  "links": [],
+  "note": "assembly: 국회 일정 띠(원본 0-82·0-84) — 생성기가 만들지 않는 파일(이 저장소에 직접). name = 열린국회정보 COMMITTEE_NAME 정식명(11/1 실측), exclude = TITLE 부분 일치(띄어쓰기 무시)로 뺄 회의, plenary = 본회의도. 보건복지위·재정경제기획위 전부.",
+  "assembly": {
+    "label": "국회 일정",
+    "days": 14,
+    "plenary": true,
+    "committees": [
+      {
+        "name": "보건복지위원회",
+        "short": "보건복지위",
+        "exclude": []
+      },
+      {
+        "name": "재정경제기획위원회",
+        "short": "재정경제기획위",
+        "exclude": []
+      }
+    ]
+  }
+}
